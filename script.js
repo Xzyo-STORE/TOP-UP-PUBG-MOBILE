@@ -1,0 +1,286 @@
+// ==========================================
+// CONFIG FIREBASE (VERSI 9 MODULAR)
+// ==========================================
+const firebaseConfig = {
+    apiKey: "AIzaSyAOU2RNedLbO5QpKm9gEHF7KQC9XFACMdc",
+    authDomain: "xzyo-s.firebaseapp.com",
+    databaseURL: "https://xzyo-s-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "xzyo-s", 
+    storageBucket: "xzyo-s.firebasestorage.app",
+    messagingSenderId: "949339875672", 
+    appId: "1:949339875672:web:b5d751452bf5875a445d2d"
+};
+
+// Inisialisasi Firebase v9
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.database(); // Menggunakan database-compat
+
+const MENU_FRUIT = [
+    
+{ n: "✨ EXECLUSIF PUBG MOBILE", header: true },
+{ n: "✦ Elite Pass Plus + Kupon", p: 427000 },
+{ n: "🪙 UC PUBG MOBILE", header: true },
+{ n: "✦ 15 UC", p: 9000 },
+{ n: "✦ 25 UC", p: 17000 },
+{ n: "✦ 35 UC", p: 17000 },
+{ n: "✦ 50 UC", p: 18000 },
+{ n: "✦ 60 UC", p: 19000 },
+{ n: "✦ 70 UC", p: 30000 },
+{ n: "✦ 100 UC", p: 33000 },
+{ n: "✦ 125 UC", p: 47000 },
+{ n: "✦ 150 UC", p: 49000 },
+{ n: "✦ 200 UC", p: 64000 },
+{ n: "✦ 210 UC", p: 64000 },
+{ n: "✦ 250 UC", p: 78000 },
+{ n: "✦ 300 UC", p: 81000 },
+{ n: "✦ 350 UC", p: 97000 },
+{ n: "✦ 375 UC", p: 97000 },
+{ n: "✦ 500 UC", p: 129000 },
+{ n: "✦ 525 UC", p: 142000 },
+{ n: "✦ 700 UC", p: 174000 },
+{ n: "✦ 750 UC", p: 187000 },
+{ n: "✦ 1000 UC", p: 247000 },
+{ n: "✦ 1100 UC", p: 263000 },
+{ n: "✦ 1250 UC", p: 359000 },
+{ n: "✦ 1500 UC", p: 352000 },
+{ n: "✦ 1750 UC", p: 414000 },
+{ n: "✦ 2500 UC", p: 547000 },
+{ n: "🪙 UC PUBG GLOBAL", header: true },
+{ n: "✦ 60 UC", p: 17000 },
+{ n: "✦ 120 UC", p: 32000 },
+{ n: "✦ 180 UC", p: 49000 },
+{ n: "✦ 240 UC", p: 65000 },
+{ n: "✦ 325 UC", p: 80000 },
+{ n: "✦ 385 UC", p: 96000 },
+{ n: "✦ 445 UC", p: 113000 },
+{ n: "✦ 660 UC", p: 155000 },
+{ n: "✦ 720 UC", p: 173000 },
+{ n: "✦ 985 UC", p: 235000 },
+{ n: "✦ 1045 UC", p: 241000 },
+{ n: "✦ 1080 UC", p: 281000 },
+{ n: "✦ 1645 UC", p: 390000 },
+{ n: "✦ 1800 UC", p: 386000 },
+{ n: "✦ 2125 UC", p: 465000 },
+{ n: "✦ 2460 UC", p: 519000 },
+{ n: "✦ 2785 UC", p: 591000 },
+{ n: "✦ 3120 UC", p: 700000 },
+{ n: "✦ 3850 UC", p: 756000 },
+{ n: "✦ 4510 UC", p: 914000 },
+{ n: "✦ 8100 UC", p: 1512000 },
+{ n: "🪙 UC PUBG NEW STATE", header: true },
+{ n: "✦ 300 NC", p: 17000 },
+{ n: "✦ 1.500 + 80 NC", p: 79000 },
+{ n: "✦ 3.600 + 250 NC", p: 185000 },
+{ n: "✦ 9.300 + 930 NC", p: 466000 }
+];
+
+let cart = {}; 
+let selectedPay = "", currentTid = "", discount = 0;
+
+function init() {
+    const box = document.getElementById('joki-list');
+    if (!box) return;
+    box.innerHTML = ""; 
+    MENU_FRUIT.forEach((item, index) => {
+        if (item.header) {
+            box.innerHTML += `<div class="item-header" style="background: var(--border); color: var(--primary); padding: 10px; border-radius: 12px; margin: 15px 0 10px 0; text-align: center; font-weight: 800; font-size: 12px;">${item.n}</div>`;
+        } else {
+            box.innerHTML += `
+            <div class="item-joki-cart" id="item-${index}">
+                <div class="info-item">
+                    <div class="name-item" style="font-weight: 600;">${item.n}</div>
+                    <div class="price-item" style="color: var(--primary); font-size: 13px;">Rp ${item.p.toLocaleString()}</div>
+                </div>
+                <div class="action-item" style="display: flex; align-items: center; gap: 10px;">
+                    <button onclick="updateCart(${index}, -1)" style="background: var(--bg); border: 1px solid var(--border); color: white; width: 30px; height: 30px; border-radius: 8px; cursor: pointer;">-</button>
+                    <span id="qty-${index}" style="font-weight: 800; min-width: 20px; text-align: center;">0</span>
+                    <button onclick="updateCart(${index}, 1)" style="background: var(--primary); border: none; color: black; width: 30px; height: 30px; border-radius: 8px; cursor: pointer; font-weight: 800;">+</button>
+                </div>
+            </div>`;
+        }
+    });
+}
+
+function updateCart(index, delta) {
+    if (!cart[index]) cart[index] = 0;
+    cart[index] += delta;
+    if (cart[index] < 0) cart[index] = 0;
+
+    const qtySpan = document.getElementById(`qty-${index}`);
+    if(qtySpan) qtySpan.innerText = cart[index];
+    
+    const el = document.getElementById(`item-${index}`);
+    if(el) {
+        el.style.borderColor = cart[index] > 0 ? "var(--primary)" : "var(--border)";
+        el.style.background = cart[index] > 0 ? "rgba(0, 210, 255, 0.05)" : "var(--inactive)";
+    }
+    hitung();
+}
+
+function hitung() {
+    let txt = ""; let subtotal = 0;
+    MENU_FRUIT.forEach((item, index) => {
+        if (cart[index] > 0) {
+            txt += `${item.n} (${cart[index]}x), `;
+            subtotal += (item.p * cart[index]);
+        }
+    });
+    let finalTotal = subtotal - (subtotal * discount);
+    const detailTxt = document.getElementById('detailText');
+    if(detailTxt) detailTxt.value = txt.slice(0, -2);
+    
+    const totalAkhir = document.getElementById('totalAkhir');
+    if(totalAkhir) totalAkhir.innerText = "Rp " + finalTotal.toLocaleString();
+    updateBtn();
+}
+
+function applyVoucher() {
+    const code = document.getElementById('vouchCode').value.toUpperCase();
+    const daftarVoucher = {
+         "R3Z4": 0.20, 
+         "RAF4": 0.15, 
+         "F4HR1": 0.15, 
+         "FEB2026": 0.15 };
+    if (daftarVoucher[code] !== undefined) {
+        discount = daftarVoucher[code];
+        alert(`✅ Voucher Berhasil! Diskon ${discount * 100}%`);
+    } else {
+        discount = 0;
+        alert("❌ Voucher Tidak Valid!");
+    }
+    hitung();
+}
+
+function selectPay(m, el) {
+    selectedPay = m;
+    document.querySelectorAll('.pay-bar').forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected');
+    updateBtn();
+}
+
+function updateBtn() {
+    const u = document.getElementById('userRoblox').value.trim();
+    const w = document.getElementById('waUser').value.trim();
+    const hasItems = Object.values(cart).some(q => q > 0);
+    const btn = document.getElementById('btnGas');
+    if(btn) btn.disabled = !(u && w && hasItems && selectedPay);
+}
+
+async function prosesPesanan() {
+    const loader = document.getElementById('loading-overlay');
+    loader.style.display = 'flex';
+    currentTid = "XZY-" + Math.floor(Math.random()*900000+100000);
+    
+    const u = document.getElementById('userRoblox').value.trim();
+    const itm = document.getElementById('detailText').value;
+    const tot = document.getElementById('totalAkhir').innerText;
+    let w = document.getElementById('waUser').value.trim();
+    if (w.startsWith('0')) w = '62' + w.substring(1);
+
+    try {
+        // Syntax v9 compat untuk Ref dan Set
+        await db.ref('orders/' + currentTid).set({
+            tid: currentTid, status: "pending", category: "GAMEPASS",
+            user: u, wa: w, items: itm, total: tot,
+            method: selectedPay, timestamp: Date.now()
+        });
+        
+        kirimFormSubmit(currentTid, u, w, itm, tot);
+        
+        setTimeout(() => {
+            loader.style.display = 'none';
+            switchSlide(1, 2);
+            document.getElementById('payNominal').innerText = tot;
+            document.getElementById('displayTid').innerText = currentTid;
+
+            const qrisBox = document.getElementById('qris-display');
+            const infoTeks = document.getElementById('payMethodInfo');
+            const gbrQR = document.getElementById('gambar-qris');
+            const linkQRIS = "https://i.ibb.co.com/4RgqsZ5j/IMG-20260227-021950.png";
+            const paymentBox = document.getElementById('payment-display')
+            const walletNumber = document.getElementById('wallet-number')
+            const Dana = "089677329404";
+            const OvoGopay = "089517154561";
+
+            if (selectedPay === "QRIS") {
+                infoTeks.innerText = "QRIS";
+                gbrQR.src = linkQRIS;
+                qrisBox.style.display = "block";
+                walletNumber.style.display = "none";
+            }
+            else {
+                paymentBox.style.display = "block";
+                gbrQR.style.display = "none";       // Gambar Sembunyi
+                walletNumber.style.display = "block"; // Teks Nomor Muncul
+                if (selectedPay === "DANA") {
+                    infoTeks.innerText = "DANA";
+                    walletNumber.innerText = Dana;
+                }
+                else if (selectedPay === "OVO"){
+                    infoTeks.innerText = "OVO";
+                    walletNumber.innerText = OvoGopay;
+                }
+                else if (selectedPay === "GOPAY") {
+                    infoTeks.innerText = "GOPAY";
+                    walletNumber.innerText = OvoGopay;
+                }
+            }
+        }, 1500);
+
+        db.ref('orders/' + currentTid + '/status').on('value', snap => {
+            if(snap.val() === 's') tampilkanSlide3(currentTid, u, itm, tot);
+        });
+
+    } catch (err) {
+        loader.style.display = 'none';
+        console.error(err);
+        alert("Gagal koneksi database!");
+    }
+}
+
+function kirimFormSubmit(tid, u, w, itm, tot) {
+    const telegramToken = "8537576704:AAH2OIQwNR0I6qVWt62h_DxL3YR9QPW3zTI";
+    const telegramChatId = "8262559652";
+    
+    const linkKonfirmasi = `https://admin-six-wine-21.vercel.app/admin.html?tid=${tid}`;
+    
+   const pesan = `🚀 *PESANAN TOP UP BARU*%0A` +
+                  `━━━━━━━━━━━━━━━━━━━━%0A` +
+                  `🆔 *Order ID:* \`${tid}\` %0A` +
+                  `👤 *UID:* ${u}%0A` +
+                  `📱 *WA:* [Chat Customer](https://wa.me/${w})%0A` +
+                  `📦 *Item:* ${itm}%0A` +
+                  `💰 *Total:* *${tot}*%0A` +
+                  `💳 *Metode:* ${selectedPay}%0A` +
+                  `━━━━━━━━━━━━━━━━━━━━%0A` +
+                  `👇 *KLIK JIKA SUDAH BAYAR:*%0A` +
+                  `${linkKonfirmasi}`;
+    
+    fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage?chat_id=${telegramChatId}&text=${pesan}&parse_mode=Markdown&disable_web_page_preview=true`);
+}
+
+function tampilkanSlide3(tid, u, itm, tot) {
+    switchSlide(2, 3);
+    document.getElementById('res-id').innerText = tid;
+    document.getElementById('res-user').innerText = u;
+    document.getElementById('res-item').innerText = itm;
+    document.getElementById('res-total').innerText = tot;
+}
+
+function switchSlide(from, to) {
+    const f = document.getElementById('slide-' + from);
+    const t = document.getElementById('slide-' + to);
+    if(f) f.classList.remove('active');
+    setTimeout(() => { 
+        if(t) t.classList.add('active'); 
+        window.scrollTo(0,0); 
+    }, 150);
+}
+
+window.onload = () => {
+    init();
+    const uInp = document.getElementById('userRoblox');
+    const wInp = document.getElementById('waUser');
+    if(uInp) uInp.oninput = updateBtn;
+    if(wInp) wInp.oninput = updateBtn;
+};
