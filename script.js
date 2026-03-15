@@ -223,7 +223,7 @@ async function prosesPesanan() {
                     walletNumber.innerText = OvoGopay;
                 }
             }
-        }, 1500);
+        }, 1000);
 
         db.ref('orders/' + currentTid + '/status').on('value', snap => {
             if(snap.val() === 's') tampilkanSlide3(currentTid, u, itm, tot);
